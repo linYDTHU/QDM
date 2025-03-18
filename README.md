@@ -157,7 +157,7 @@ This project is licensed under <a rel="license" href="./LICENSE">MIT License</a>
 
 ## Acknowledgement
 
-This project is primarily based on [ResShift](https://github.com/zsyOAOA/ResShift) and [LDM](https://github.com/CompVis/latent-diffusion). We also adopt [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) to synthesize the training data for real-world super-resolution. We design QDM mainly based on [DiT](https://github.com/facebookresearch/DiT). Thanks for their awesome works.
+This project is primarily based on [ResShift](https://github.com/zsyOAOA/ResShift) and [LDM](https://github.com/CompVis/latent-diffusion). We also adopt [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) to synthesize the LR/HR pairs. We design QDM mainly based on [DiT](https://github.com/facebookresearch/DiT). Thanks for their awesome works.
 
 ### Contact
 If you have any questions, please feel free to contact me via `ydlin718@gmail.com`.
