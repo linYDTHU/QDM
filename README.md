@@ -14,11 +14,11 @@ By guiding the diffusion with a quadtree derived from the low-quality input, QDM
 This mask-guided, two-stream architecture adaptively balances quality and efficiency, producing high-fidelity outputs with low computational redundancy.
 Experiments demonstrate QDM’s effectiveness in high-resolution SR tasks across diverse image types, particularly in medical imaging (e.g., CT scans), where large homogeneous regions are prevalent.
 Furthermore, QDM outperforms or is comparable to state-of-the-art SR methods on standard benchmarks while significantly reducing computational costs, highlighting its efficiency and suitability for resource-limited environments.
-><img src="./assets/Quadtree_Diagram.png" align="middle" width="1000"><img src="./assets/Diffusion_Process.png" align="middle" width="1000">
+><img src="./assets/Quadtree_Diagram.png" align="middle" width="1000">
 
 ---
 ## Update
-- **2025.03.18**: Release codes.
+- **2025.03.18**: Release codes & pretrained checkpoints, and update README.
 - **2025.03.14**: Create this repo.
 
 ## Requirements
@@ -45,16 +45,16 @@ pip install -r requirements.txt
 ### Download Pretrained Checkpoints
 
 #### First-Stage Models (Autoencoders)
-1. ​**Real-world SR Task**: [Download Link]()
-2. ​**Medical SR Task**: [Download Link]()
+1. ​**Real-world SR Task**: [Download Link](https://github.com/zsyOAOA/ResShift/releases/download/v2.0/autoencoder_vq_f4.pth)
+2. ​**Medical SR Task**: [Download Link](https://drive.google.com/file/d/177wL116e495OTxxaBeXZh9c0Wz7_slHU/view?usp=sharing)
    
 ​**Note**: Place the downloaded models in the `weights` directory.
 
 ### QDM-L Checkpoints
 We provide pretrained checkpoints for the QDM-L model for the following tasks:
-- [Real-world SR X4]()
-- [Medical SR X4]()
-- [Medical SR X8]()
+- [Real-world SR X4](https://drive.google.com/file/d/1N30YnuhBYkjOC0K9igV0ixGj9-Wtu1b3/view?usp=sharing)
+- [Medical SR X4](https://drive.google.com/file/d/165iWcLFRPmIZPBDygiaeK6iKmMDCTlN6/view?usp=sharing)
+- [Medical SR X8](https://drive.google.com/file/d/1c9eL54BdwUcr-YWYFFLUwkPDJ_qQPYZz/view?usp=sharing)
   
 ​**Note**: Ensure all downloaded weights are placed in the `weights` directory.
 
@@ -88,9 +88,68 @@ python inference.py \
 #### 🔧Configuration Tips
 - When processing very large images, you can adjust `--chop_bs` to balance efficiency and memory usage.
 - We provide multiple configuration files for different tasks in the `configs/inference` directory. **​Make sure to select the appropriate configuration file for your specific task.**
+- You can add `--process` argument to output the mask guided diffusion process demonstrated in the paper.
 
-### Training
-#### Preparing stage
+<img src="./assets/Diffusion_Process.png" align="middle" width="1000">
+
+## Training
+### Preparing Stage
+
+This repository supports two super-resolution (SR) tasks: **Real-World SR** and **Medical CT SR**. Follow the steps below to prepare the necessary training and testing datasets.
+
+#### Real-World SR Task
+
+We integrate training data from six established benchmarks:
+
+- **LSDIR** – [Access Dataset](https://huggingface.co/ofsoundof/LSDIR)
+- **DIV2K** – [Access Dataset](https://data.vision.ee.ethz.ch/cvl/DIV2K/)
+- **DIV8K** – [Access Dataset](https://huggingface.co/datasets/yangtao9009/DIV8K)
+- **OutdoorSceneTraining** – [Access Dataset](https://drive.google.com/drive/folders/16PIViLkv4WsXk4fV1gDHvEtQxdMq6nfY)
+- **Flicker2K** – [Access Dataset](https://huggingface.co/datasets/goodfellowliu/Flickr2K)
+- **FFHQ Subset** – A curated selection of 10,000 facial images from the [FFHQ](https://github.com/NVlabs/ffhq-dataset) dataset
+
+#### Preprocessing Steps
+
+- **Filtering OutdoorSceneTraining:**  
+  Filter out images with spatial dimensions smaller than 512 pixels. Update the directory path inside the script as needed, then run:
+  ```bash
+  python scripts/filter_images.py
+  ```
+- **Synthetic LSDIR_TEST:**  
+  Download the pre-synthesized LSDIR_TEST dataset from [this link](https://drive.google.com/file/d/1IhGtO6niw7IPK_m4QagB3msV5SMBI0B8/view?usp=sharing) or generate your own by running:
+  ```bash
+  python scripts/prepare_lsdir_test.py
+  ```
+
+#### Medical CT SR Task
+
+For the medical CT super-resolution task, we utilize clinical CT scans from two well-established segmentation challenges: **HaN-Seg** and **SegRap2023**. Download the datasets using the following links:
+
+- Training Set: [Download](https://drive.google.com/file/d/1L91BY58fRQ8JBzpDc7_P9ffhH6SOb2Zc/view?usp=sharing)
+- Medx4 Testing Set: [Download](https://drive.google.com/file/d/1wcmxRjcdoeLZE8lOE3e-8oaq6R0SVYin/view?usp=sharing)
+- Medx8 Testing Set: [Download](https://drive.google.com/file/d/1WxHZ-V3tZrNHBqaI6Whxn6HDPDmk56kl/view?usp=sharing)
+
+### Training Scripts
+You can start your training process via running:
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=8 --nnodes=1 main.py --cfg_path [Config Path] --save_dir [Logging Folder]
+```
+We provide multiple configuration files for different tasks in the `configs/train` directory. ​
+
+## Citations
+Please consider citing our paper in your publications if it helps. Here is the bibtex:
+
+```
+@misc{yang2025qdmquadtreebasedregionadaptivesparse,
+      title={QDM: Quadtree-Based Region-Adaptive Sparse Diffusion Models for Efficient Image Super-Resolution}, 
+      author={Donglin Yang and Paul Vicol and Xiaojuan Qi and Renjie Liao and Xiaofan Zhang},
+      year={2025},
+      eprint={2503.12015},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2503.12015}, 
+}
+```
 
 ## License
 
