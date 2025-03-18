@@ -1,0 +1,130 @@
+trainer:
+  target: trainer.TrainerQDM
+
+model:
+  target: models.dit.QDM
+  ckpt_path: ~
+  params:
+    input_size: 128
+    up_patch_size: 8
+    down_patch_size: 2
+    down_large_patch_size: 8
+    in_channels: 3
+    hidden_size: 384
+    depth: 6
+    num_heads: 6
+    mlp_ratio: 4.0
+    learn_sigma: False
+    cond_lq: True
+    lq_channels: 3
+
+diffusion:
+  target: models.script_util.create_masked_gaussian_diffusion
+  params:
+    sf: 4
+    schedule_name: exponential
+    schedule_kwargs:
+      power: 0.3
+    etas_end: 0.99
+    steps: 15
+    min_noise_level: 0.04
+    kappa: 2.0
+    weighted_mse: False
+    predict_type: xstart
+    timestep_respacing: ~
+    scale_factor: 0.1
+    normalize_input: True
+    latent_flag: True
+
+autoencoder:
+  target: ldm.models.autoencoder.AutoencoderKLTorch
+  ckpt_path: weights/medical_autoencoder.ckpt
+  use_fp16: True
+  params:
+    embed_dim: 3    
+    ddconfig:
+      double_z: True
+      z_channels: 3
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [ 1,2,4 ]  # num_down = len(ch_mult)-1
+      num_res_blocks: 2
+      attn_resolutions: [ ]
+      dropout: 0.0
+
+data:
+  train:
+    type: medsrgan
+    params:
+      dir_path: data/medical_train/gt/
+      im_exts: png
+
+      blur_kernel_size: 13
+      kernel_list: ['iso', 'aniso', 'generalized_iso', 'generalized_aniso', 'plateau_iso', 'plateau_aniso']
+      kernel_prob: [0.60, 0.40, 0.0, 0.0, 0.0, 0.0]
+      sinc_prob: 0.1
+      blur_sigma: [0.2, 3.0]
+      betag_range: [1.0, 1.5]
+      betap_range: [1, 1.2]
+      
+      use_hflip: True
+      use_rot: False
+  val:
+    type: base
+    params:
+      dir_path: data/medical_noise_test/lq/
+      im_exts: png
+      extra_dir_path: data/medical_noise_test/gt/
+      recursive: False
+      length: 64
+
+degradation:
+  sf: 4
+  # the first degradation process
+  resize_prob: [0.2, 0.7, 0.1]  # up, down, keep
+  resize_range: [0.5, 1.5]
+  gaussian_noise_prob: 0.4
+  noise_range: [1, 15]
+  poisson_scale_range: [0.05, 3.0]
+  gray_noise_prob: 0.4
+  jpeg_range: [70, 95]
+
+train:
+  # mask threshold
+  threshold: 0.00
+  # wandb config
+  run_name: medx4_qdm_s
+  wandb_logging: True
+  # learning rate
+  lr: 5e-5                      # learning rate 
+  lr_min: 5e-5                      # learning rate 
+  loss_coef: [1.0, 1.0]
+  lr_schedule: cosin
+  warmup_iterations: 0
+  # dataloader
+  batch: [64, 8]                
+  microbatch: 8
+  num_workers: 0
+  prefetch_factor: None            
+  # optimization settings
+  weight_decay: 0               
+  ema_rate: 0.999
+  iterations: 50000            # total iterations
+  # save logging
+  save_freq: 5000
+  log_freq: [200, 5000, 1]         # [training loss, training images, val images]
+  local_logging: True           # manually save images
+  tf_logging: False             # tensorboard logging
+  # validation settings
+  use_ema_val: True            
+  val_freq: ${train.save_freq}
+  val_y_channel: False
+  # training setting
+  use_amp: True                # amp training
+  seed: 123456                 # random seed
+  global_seeding: False
+  # model compile
+  compile:
+    flag: False
