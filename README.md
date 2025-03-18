@@ -40,11 +40,11 @@ pip install -r requirements.txt
 ### Medical Image Super-Resolution
 [<img src="assets/medx8_sr_1.png" height="330"/>](https://imgsli.com/MzYwMDAy) [<img src="assets/medx8_sr_2.png" height="330px"/>](https://imgsli.com/MzYwMDA1) [<img src="assets/medx8_sr_3.png" height="330px"/>](https://imgsli.com/MzYwMDA2) 
 
-# Fast Testing Guide
+## Fast Testing Guide
 
-## Download Pretrained Checkpoints
+### Download Pretrained Checkpoints
 
-### First-Stage Models (Autoencoders)
+#### First-Stage Models (Autoencoders)
 1. ​**Real-world SR Task**: [Download Link]()
 2. ​**Medical SR Task**: [Download Link]()
    
@@ -58,9 +58,9 @@ We provide pretrained checkpoints for the QDM-L model for the following tasks:
   
 ​**Note**: Ensure all downloaded weights are placed in the `weights` directory.
 
-## Inference
+### Inference
 
-### 🚀 Multi-GPU Acceleration
+#### 🚀 Multi-GPU Acceleration
 If you have multiple GPUs available, you can accelerate the inference process using the following command:
 
 ```bash
@@ -74,7 +74,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=8 --
   --ckpt_path [Checkpoint Path] \
   --distributed
 ```
-### 💻 Single-GPU Execution
+#### 💻 Single-GPU Execution
 ```bash
 python inference.py \
   -i [Input Directory or Image] \
@@ -85,7 +85,7 @@ python inference.py \
   --cfg_path [Config Path] \
   --ckpt_path [Checkpoint Path]
 ```
-### 🔧Configuration Tips
+#### 🔧Configuration Tips
 - When processing very large images, you can adjust `--chop_bs` to balance efficiency and memory usage.
 - We provide multiple configuration files for different tasks in the `configs/inference` directory. **​Make sure to select the appropriate configuration file for your specific task.**
 
