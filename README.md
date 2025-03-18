@@ -40,16 +40,54 @@ pip install -r requirements.txt
 ### Medical Image Super-Resolution
 [<img src="assets/medx8_sr_1.png" height="330"/>](https://imgsli.com/MzYwMDAy) [<img src="assets/medx8_sr_2.png" height="330px"/>](https://imgsli.com/MzYwMDA1) [<img src="assets/medx8_sr_3.png" height="330px"/>](https://imgsli.com/MzYwMDA2) 
 
-## Fast Testing
-#### Real-world image super-resolution
+# Fast Testing Guide
 
-```
+## Download Pretrained Checkpoints
 
-```
-#### Medical CT image super-resolution
-```
+### First-Stage Models (Autoencoders)
+1. ​**Real-world SR Task**: [Download Link]()
+2. ​**Medical SR Task**: [Download Link]()
+   
+​**Note**: Place the downloaded models in the `weights` directory.
 
+### QDM-L Checkpoints
+We provide pretrained checkpoints for the QDM-L model for the following tasks:
+- [Real-world SR X4]()
+- [Medical SR X4]()
+- [Medical SR X8]()
+  
+​**Note**: Ensure all downloaded weights are placed in the `weights` directory.
+
+## Inference
+
+### 🚀 Multi-GPU Acceleration
+If you have multiple GPUs available, you can accelerate the inference process using the following command:
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --standalone --nproc_per_node=8 --nnodes=1 inference.py \
+  -i [Input Directory or Image] \
+  -o [Output Dir] \
+  --seed [Seed] \
+  --chop_bs [Chopping Batch Size] \
+  --chop_size [Chopping Size] \
+  --cfg_path [Config Path] \
+  --ckpt_path [Checkpoint Path] \
+  --distributed
 ```
+### 💻 Single-GPU Execution
+```bash
+python inference.py \
+  -i [Input Directory or Image] \
+  -o [Output Dir] \
+  --seed [Seed] \
+  --chop_bs [Chopping Batch Size] \
+  --chop_size [Chopping Size] \
+  --cfg_path [Config Path] \
+  --ckpt_path [Checkpoint Path]
+```
+### 🔧Configuration Tips
+- When processing very large images, you can adjust `--chop_bs` to balance efficiency and memory usage.
+- We provide multiple configuration files for different tasks in the `configs/inference` directory. **​Make sure to select the appropriate configuration file for your specific task.**
 
 ### Training
 #### Preparing stage
