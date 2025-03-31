@@ -1,8 +1,13 @@
 # QDM: Quadtree-Based Region-Adaptive Sparse Diffusion Models for Efficient Image Super-Resolution
-
-[Arxiv](https://arxiv.org/abs/2503.12015)
-
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=linYDTHU/QDM) [![GitHub Stars](https://img.shields.io/github/stars/linYDTHU/QDM?affiliations=OWNER&color=green&style=social)](https://github.com/linYDTHU/QDM)
+<div align="center">
+  <a href="https://arxiv.org/abs/2503.12015">
+    <img src="https://img.shields.io/badge/arXiv-2503.12015-b31b1b.svg" alt="arXiv">
+  </a>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=linYDTHU/QDM" alt="visitors">
+  <a href="https://github.com/linYDTHU/QDM">
+    <img src="https://img.shields.io/github/stars/linYDTHU/QDM?affiliations=OWNER&color=green&style=social" alt="GitHub Stars">
+  </a>
+</div>
 
 
 If you've found QDM useful for your research or projects, please show your support by ⭐ in this repo. Thanks!
