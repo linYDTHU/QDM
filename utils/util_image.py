@@ -990,8 +990,9 @@ class ImageSpliterNp:
         assert np.all(self.pixel_count != 0)
         return self.im_res / self.pixel_count
 
+# Inherited from https://github.com/zsyOAOA/InvSR/blob/master/utils/util_image.py#L904
 class ImageSpliterTh:
-    def __init__(self, im, pch_size, stride, sf=1, extra_bs=1):
+    def __init__(self, im, pch_size, stride, sf=1, extra_bs=1, weight_type='Gaussian'):
         '''
         Input:
             im: n x c x h x w, torch tensor, float, low-resolution image in SR
@@ -999,6 +1000,8 @@ class ImageSpliterTh:
             sf: scale factor in image super-resolution
             pch_bs: aggregate pchs to processing, only used when inputing single image
         '''
+        assert weight_type in ['Gaussian', 'ones']
+        self.weight_type = weight_type
         assert stride <= pch_size
         self.stride = stride
         self.pch_size = pch_size
@@ -1019,8 +1022,9 @@ class ImageSpliterTh:
         self.count_pchs = 0
 
         self.im_ori = im
-        self.im_res = torch.zeros([bs, chn, height*sf, width*sf], dtype=im.dtype, device=im.device)
-        self.pixel_count = torch.zeros([bs, chn, height*sf, width*sf], dtype=im.dtype, device=im.device)
+        self.dtype = torch.float64
+        self.im_res = torch.zeros([bs, chn, height*sf, width*sf], dtype=self.dtype, device=im.device)
+        self.pixel_count = torch.zeros([bs, chn, height*sf, width*sf], dtype=self.dtype, device=im.device)
 
     def extract_starts(self, length):
         if length <= self.pch_size:
@@ -1074,9 +1078,34 @@ class ImageSpliterTh:
         pch_list = torch.split(pch_res, self.true_bs, dim=0)
         assert len(pch_list) == len(index_infos)
         for ii, (h_start, h_end, w_start, w_end) in enumerate(index_infos):
-            current_pch = pch_list[ii]
-            self.im_res[:, :, h_start:h_end, w_start:w_end] +=  current_pch
-            self.pixel_count[:, :, h_start:h_end, w_start:w_end] += 1
+            current_pch = pch_list[ii].type(self.dtype)
+            current_weight = self.get_weight(current_pch.shape[-2], current_pch.shape[-1])
+            self.im_res[:, :, h_start:h_end, w_start:w_end] +=  current_pch * current_weight
+            self.pixel_count[:, :, h_start:h_end, w_start:w_end] += current_weight
+
+    @staticmethod
+    def generate_kernel_1d(ksize):
+        sigma = 0.3 * ((ksize - 1) * 0.5 - 1) + 0.8  # opencv default setting
+        if ksize % 2 == 0:
+            kernel = cv2.getGaussianKernel(ksize=ksize+1, sigma=sigma, ktype=cv2.CV_64F)
+            kernel = kernel[1:, ]
+        else:
+            kernel = cv2.getGaussianKernel(ksize=ksize, sigma=sigma, ktype=cv2.CV_64F)
+
+        return kernel
+
+    def get_weight(self, height, width):
+        if self.weight_type == 'ones':
+            kernel = torch.ones(1, 1, height, width)
+        elif self.weight_type == 'Gaussian':
+            kernel_h = self.generate_kernel_1d(height).reshape(-1, 1)
+            kernel_w = self.generate_kernel_1d(width).reshape(1, -1)
+            kernel = np.matmul(kernel_h, kernel_w)
+            kernel = torch.from_numpy(kernel).unsqueeze(0).unsqueeze(0) # 1 x 1 x pch_size x pch_size
+        else:
+            raise ValueError(f"Unsupported weight type: {self.weight_type}")
+
+        return kernel.to(dtype=self.dtype, device=self.im_ori.device)
 
     def gather(self):
         assert torch.all(self.pixel_count != 0)

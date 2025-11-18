@@ -23,6 +23,7 @@ Furthermore, QDM outperforms or is comparable to state-of-the-art SR methods on 
 
 ---
 ## Update
+- **2025.11.18**: Released a new arXiv version with tumor region reconstruction and real-world SR results. Refer to the paper for details. Use `print_roi_metrics.py` to replicate the tumor reconstruction results. Access results for all methods [here](https://drive.google.com/file/d/1IjmAPvqfPqdxwjRv0P9ulSdlMu4ZM_Ua/view?usp=sharing). Updated real-world SR with Gaussian-weighted patch-level aggregation as per [this reference](https://github.com/zsyOAOA/InvSR/blob/master/utils/util_image.py#L904) in `utils/util_image.py`.
 - **2025.03.18**: Release codes & pretrained checkpoints, and update README.
 - **2025.03.14**: Create this repo.
 
